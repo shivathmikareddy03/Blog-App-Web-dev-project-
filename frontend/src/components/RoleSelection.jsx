@@ -1,4 +1,4 @@
-﻿import { useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
@@ -23,7 +23,12 @@ function RoleSelection() {
   });
 
   if (!isLoaded) {
-    return <p>Loading...</p>;
+    return (
+      <div className="inkspace-loading">
+        <div className="spinner-border text-secondary" role="status" />
+        <p style={{ marginTop: 12 }}>Loading…</p>
+      </div>
+    );
   }
 
   const onSubmit = async (formData) => {
@@ -62,36 +67,56 @@ function RoleSelection() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "50px auto" }}>
-      <h2>Select your role</h2>
+    <div className="role-selection-wrap">
+      <h2>Welcome to InkSpace!</h2>
+      <p className="sub">
+        How would you like to use the platform? You can always reach out to
+        change this later.
+      </p>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        {/* USER */}
-        <label style={{ display: "block", marginBottom: 10 }}>
+        {/* Reader */}
+        <label className="role-card">
           <input
             type="radio"
             value="USER"
             {...register("role", { required: "Please select a role" })}
           />
-          User
+          <span className="role-icon">📚</span>
+          <span className="role-info">
+            <span className="role-name">Reader</span>
+            <span className="role-desc">
+              Browse articles, leave comments, and explore topics you love.
+            </span>
+          </span>
         </label>
 
-        {/* AUTHOR */}
-        <label style={{ display: "block", marginBottom: 10 }}>
+        {/* Author */}
+        <label className="role-card">
           <input
             type="radio"
             value="AUTHOR"
             {...register("role", { required: "Please select a role" })}
           />
-          Author
+          <span className="role-icon">✍️</span>
+          <span className="role-info">
+            <span className="role-name">Author</span>
+            <span className="role-desc">
+              Write, publish, and manage your own articles on InkSpace.
+            </span>
+          </span>
         </label>
 
         {errors.role && (
-          <p style={{ color: "red" }}>{errors.role.message}</p>
+          <p className="text-error">{errors.role.message}</p>
         )}
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : "Continue"}
+        <button
+          type="submit"
+          className="role-submit-btn"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Setting up your account…" : "Continue →"}
         </button>
       </form>
     </div>

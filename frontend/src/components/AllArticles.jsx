@@ -1,4 +1,4 @@
-﻿import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../contexts/userContext";
 import { useNavigate } from "react-router-dom";
 import { BsArrowRightCircle } from "react-icons/bs";
@@ -60,67 +60,93 @@ function AllArticles() {
     };
   }, [currentUser?.email, getToken]);
 
+  if (err) {
+    return (
+      <div className="container" style={{ paddingTop: 40 }}>
+        <p className="text-error">⚠ {err}</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="inkspace-loading">
+        <div className="spinner-border text-secondary" role="status" />
+        <p style={{ marginTop: 12 }}>Loading articles…</p>
+      </div>
+    );
+  }
+
+  if (!loading && articles.length === 0) {
+    return (
+      <div className="inkspace-empty">
+        <div className="empty-icon">📭</div>
+        <h5>No articles yet</h5>
+        <p>Check back soon — authors are hard at work!</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 mt-5">
-      {err && <p className="text-danger">{err}</p>}
+    <div>
+      <div className="section-title">Latest Articles</div>
+      <p className="section-sub">{articles.length} article{articles.length !== 1 ? "s" : ""} available to read</p>
 
-      {loading && <p>Loading articles...</p>}
+      <div className="article-grid">
+        {articles.map((article) => (
+          <div className="inkspace-card" key={article._id}>
+            <div className="card-accent-bar" />
 
-      {!loading && !err && articles.length === 0 && (
-        <p>No articles yet.</p>
-      )}
+            <div className="card-body-inner">
+              {/* Author row */}
+              <div className="card-author-row">
+                {article.author?.profileImageUrl && (
+                  <img
+                    src={article.author.profileImageUrl}
+                    alt="Author"
+                  />
+                )}
+                <span className="card-author-name">
+                  {[article.author?.firstName, article.author?.lastName]
+                    .filter(Boolean)
+                    .join(" ") || "Anonymous"}
+                </span>
 
-      {!loading &&
-        articles.map((article) => (
-          <div className="col" key={article._id}>
-            <div className="card h-100">
-              <div className="card-body">
-                <div className="author-details text-end">
-                  {article.author?.profileImageUrl && (
-                    <img
-                      src={article.author.profileImageUrl}
-                      width="40"
-                      className="rounded-circle"
-                      alt="Author"
-                    />
-                  )}
-
-                  <p>
-                    <small className="text-secondary">
-                      {[article.author?.firstName, article.author?.lastName]
-                        .filter(Boolean)
-                        .join(" ")}
-                    </small>
-                  </p>
-                </div>
-
-                <h5 className="card-title">{article.title}</h5>
-
-                <p className="card-text">
-                  {article.content.slice(0, 80)}
-                  {article.content.length > 80 ? "..." : ""}
-                </p>
-
-                <button
-                  className="custom-btn btn-4"
-                  onClick={() => gotoArticleView(article)}
-                >
-                  <span>
-                    Read More <BsArrowRightCircle />
+                {article.category && (
+                  <span className="card-category-badge">
+                    {article.category}
                   </span>
-                </button>
+                )}
               </div>
 
-              <div className="card-footer">
-                <small className="text-body-secondary">
-                  <FcClock className="fs-4 me-2" />
-                  Last updated{" "}
-                  {new Date(article.updatedAt).toLocaleDateString()}
-                </small>
-              </div>
+              <h5 className="card-title-text">{article.title}</h5>
+
+              <p className="card-excerpt">
+                {article.content.slice(0, 110)}
+                {article.content.length > 110 ? "…" : ""}
+              </p>
+            </div>
+
+            <div className="card-footer-inner">
+              <span className="card-date">
+                <FcClock />
+                {new Date(article.updatedAt).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </span>
+
+              <button
+                className="card-read-btn"
+                onClick={() => gotoArticleView(article)}
+              >
+                Read <BsArrowRightCircle />
+              </button>
             </div>
           </div>
         ))}
+      </div>
     </div>
   );
 }

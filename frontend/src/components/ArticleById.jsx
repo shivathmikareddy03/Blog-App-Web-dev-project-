@@ -1,4 +1,4 @@
-﻿import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@clerk/clerk-react";
@@ -97,7 +97,7 @@ function ArticleById() {
         comments: data.payload.comments,
       }));
 
-      setCommentStatus("Comment added successfully");
+      setCommentStatus("Comment added successfully!");
       reset();
     } catch (e) {
       setCommentStatus(e.message || "Failed to add comment");
@@ -134,14 +134,14 @@ function ArticleById() {
       }));
 
       setEditMode(false);
-      setCommentStatus("Article updated successfully");
+      setCommentStatus("Article updated successfully!");
     } catch (e) {
       setCommentStatus(e.message || "Could not update article");
     }
   };
 
   const deleteArticle = async () => {
-    if (!window.confirm("Delete this article?")) {
+    if (!window.confirm("Are you sure you want to delete this article?")) {
       return;
     }
 
@@ -171,11 +171,20 @@ function ArticleById() {
   };
 
   if (error) {
-    return <p className="text-danger">{error}</p>;
+    return (
+      <div className="article-detail-wrap">
+        <p className="text-error">⚠ {error}</p>
+      </div>
+    );
   }
 
   if (!article) {
-    return <p>Loading article...</p>;
+    return (
+      <div className="inkspace-loading">
+        <div className="spinner-border text-secondary" role="status" />
+        <p style={{ marginTop: 12 }}>Loading article…</p>
+      </div>
+    );
   }
 
   const isAuthor =
@@ -183,89 +192,92 @@ function ArticleById() {
     String(article.author?._id) === String(currentUser?._id);
 
   return (
-    <article>
+    <article className="article-detail-wrap">
       {editMode ? (
-        <form onSubmit={saveArticle} className="mb-4">
-          <label className="form-label">Title</label>
+        /* ── Edit mode ── */
+        <div className="edit-form-card">
+          <h4 style={{ fontFamily: "Playfair Display, serif", marginBottom: 20 }}>
+            Edit Article
+          </h4>
 
-          <input
-            className="form-control mb-3"
-            required
-            value={editFields.title}
-            onChange={(e) =>
-              setEditFields({
-                ...editFields,
-                title: e.target.value,
-              })
-            }
-          />
+          <form onSubmit={saveArticle}>
+            <div style={{ marginBottom: 18 }}>
+              <label className="inkspace-form-label">Title</label>
+              <input
+                className="inkspace-input"
+                required
+                value={editFields.title}
+                onChange={(e) =>
+                  setEditFields({ ...editFields, title: e.target.value })
+                }
+              />
+            </div>
 
-          <label className="form-label">Category</label>
+            <div style={{ marginBottom: 18 }}>
+              <label className="inkspace-form-label">Category</label>
+              <input
+                className="inkspace-input"
+                required
+                value={editFields.category}
+                onChange={(e) =>
+                  setEditFields({ ...editFields, category: e.target.value })
+                }
+              />
+            </div>
 
-          <input
-            className="form-control mb-3"
-            required
-            value={editFields.category}
-            onChange={(e) =>
-              setEditFields({
-                ...editFields,
-                category: e.target.value,
-              })
-            }
-          />
+            <div style={{ marginBottom: 22 }}>
+              <label className="inkspace-form-label">Content</label>
+              <textarea
+                className="inkspace-input"
+                rows="12"
+                required
+                value={editFields.content}
+                onChange={(e) =>
+                  setEditFields({ ...editFields, content: e.target.value })
+                }
+              />
+            </div>
 
-          <label className="form-label">Content</label>
-
-          <textarea
-            className="form-control mb-3"
-            rows="10"
-            required
-            value={editFields.content}
-            onChange={(e) =>
-              setEditFields({
-                ...editFields,
-                content: e.target.value,
-              })
-            }
-          />
-
-          <button className="btn btn-primary me-2">
-            Save changes
-          </button>
-
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setEditMode(false)}
-          >
-            Cancel
-          </button>
-        </form>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button type="submit" className="post-article-btn">
+                Save changes
+              </button>
+              <button
+                type="button"
+                className="btn-edit"
+                onClick={() => setEditMode(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
       ) : (
         <>
           <h1>{article.title}</h1>
 
-          <small className="text-secondary me-3">
-            <FcCalendar /> Created{" "}
-            {new Date(article.createdAt).toLocaleDateString()}
-          </small>
+          <div className="article-meta">
+            <span className="meta-item">
+              <FcCalendar />
+              Created {new Date(article.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+            </span>
+            <span className="meta-item">
+              <FcClock />
+              Updated {new Date(article.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+            </span>
+            {article.category && (
+              <span className="card-category-badge">{article.category}</span>
+            )}
+          </div>
 
-          <small className="text-secondary">
-            <FcClock /> Updated{" "}
-            {new Date(article.updatedAt).toLocaleDateString()}
-          </small>
-
-          <p
-            className="lead mt-4"
-            style={{ whiteSpace: "pre-line" }}
-          >
+          <div className="article-body">
             {article.content}
-          </p>
+          </div>
 
           {isAuthor && (
-            <div className="mb-4">
+            <div className="article-action-bar">
               <button
-                className="btn btn-outline-primary me-2"
+                className="btn-edit"
                 onClick={() => {
                   setEditFields({
                     title: article.title,
@@ -275,63 +287,59 @@ function ArticleById() {
                   setEditMode(true);
                 }}
               >
-                Edit article
+                ✏ Edit article
               </button>
 
-              <button
-                className="btn btn-outline-danger"
-                onClick={deleteArticle}
-              >
-                Delete article
+              <button className="btn-delete" onClick={deleteArticle}>
+                🗑 Delete article
               </button>
             </div>
           )}
         </>
       )}
 
-      <section className="mt-5">
-        <h4>Comments</h4>
+      {/* ── Comments ── */}
+      <section className="comments-section">
+        <h4>💬 Comments</h4>
 
         {article.comments?.length ? (
           article.comments.map((comment) => (
-            <div
-              key={comment._id}
-              className="p-3 border rounded mb-2"
-            >
-              <p className="mb-1">
+            <div key={comment._id} className="comment-item">
+              <div className="comment-author">
                 <FcPortraitMode />{" "}
-                <strong>{comment.user?.firstName || "User"}</strong>
-              </p>
-
-              <p className="mb-0">
-                <FcComments /> {comment.comment}
-              </p>
+                {comment.user?.firstName || "Reader"}
+              </div>
+              <div className="comment-text">
+                <FcComments style={{ marginRight: 6 }} />
+                {comment.comment}
+              </div>
             </div>
           ))
         ) : (
-          <p>No comments yet.</p>
+          <p style={{ color: "#9a9aaa", fontSize: "0.9rem" }}>
+            No comments yet — be the first!
+          </p>
         )}
 
         {commentStatus && (
-          <p className="mt-2">{commentStatus}</p>
+          <p className="status-msg" style={{ marginTop: 12 }}>
+            {commentStatus}
+          </p>
         )}
 
         {currentUser?.role === "USER" && (
           <form
             onSubmit={handleSubmit(addComment)}
-            className="mt-3"
+            className="comment-form"
+            style={{ marginTop: 20 }}
           >
-            <input
+            <textarea
               {...register("comment", { required: true })}
-              className="form-control mb-3"
-              placeholder="Write a comment..."
+              placeholder="Share your thoughts…"
             />
 
-            <button
-              className="btn btn-success"
-              disabled={isSubmitting}
-            >
-              Add Comment <BiCommentAdd />
+            <button className="btn-comment" disabled={isSubmitting}>
+              {isSubmitting ? "Posting…" : <>Post comment <BiCommentAdd /></>}
             </button>
           </form>
         )}

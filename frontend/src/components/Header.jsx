@@ -1,4 +1,4 @@
-﻿import {
+import {
   SignedIn,
   SignedOut,
   SignInButton,
@@ -72,17 +72,20 @@ function Header() {
   ]);
 
   return (
-    <nav className="navbar navbar-light bg-light px-4">
-      {/* Left: Logo */}
-      <a className="navbar-brand fw-bold" href="/">
-        BlogApp
+    <nav className="inkspace-navbar">
+      {/* Brand */}
+      <a className="inkspace-brand" href="/">
+        <div className="brand-icon">I</div>
+        <span className="brand-name">
+          Ink<span>Space</span>
+        </span>
       </a>
 
-      {/* Right: Auth buttons */}
+      {/* Auth */}
       <div className="ms-auto">
         <SignedOut>
           <SignInButton mode="modal">
-            <button className="btn btn-primary">Sign In</button>
+            <button className="btn-signin">Sign In</button>
           </SignInButton>
         </SignedOut>
 
